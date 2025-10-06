@@ -1,0 +1,32 @@
+// Define variáveis de tema para cores e espaçamento
+$primary-color: #4CAF50;
+$secondary-color: #2196F3;
+$accent-color: #FFC107;
+$background-color: #F9F9F9;
+$text-color: #333;
+
+$card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+$card-radius: 0.75rem;
+$card-padding: 1.25rem;
+
+$font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+// Classes utilitárias
+%card {
+  background-color: white;
+  border-radius: $card-radius;
+  box-shadow: $card-shadow;
+  padding: $card-padding;
+  margin-bottom: 1rem;
+}
+
+%title {
+  font-size: 1.5rem;
+  color: $primary-color;
+  margin-bottom: 0.5rem;
+}
+
+%subtitle {
+  font-size: 1rem;
+  color: $text-color;
+}

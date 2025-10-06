@@ -1,0 +1,216 @@
+<div class="home-container">
+
+    <div class="summary-grid">
+        <mat-card class="summary-card">
+            <mat-card-title>Total de Despesas</mat-card-title>
+            <p>{{ monthlyReport?.totalExpenses | currency:'BRL':'symbol':'1.2-2' }}</p>
+        </mat-card>
+
+        <mat-card class="summary-card">
+            <mat-card-title>Por Categoria</mat-card-title>
+            <div *ngFor="let item of monthlyReport?.expensesByCategory | keyvalue">
+                <span>{{ item.key }}:</span> {{ item.value | currency:'BRL':'symbol':'1.2-2' }}
+            </div>
+        </mat-card>
+
+        <mat-card class="summary-card">
+            <mat-card-title>Por Pessoa</mat-card-title>
+            <div *ngFor="let item of monthlyReport?.expensesByPerson | keyvalue">
+                <span>{{ item.key }}:</span> {{ item.value | currency:'BRL':'symbol':'1.2-2' }}
+            </div>
+        </mat-card>
+
+        <mat-card class="summary-card">
+            <mat-card-title>Por Cartão</mat-card-title>
+            <div *ngFor="let item of monthlyReport?.expensesByCard | keyvalue">
+                <span>{{ item.key }}:</span> {{ item.value | currency:'BRL':'symbol':'1.2-2' }}
+            </div>
+        </mat-card>
+    </div>
+
+    <mat-card class="expenses-table">
+
+
+        <mat-toolbar class="expenses-toolbar">
+            <div class="toolbar-left">
+                <span class="title">Despesas do Mês</span>
+
+                <div class="date-selectors">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Mês</mat-label>
+                        <mat-select [(value)]="selectedMonth" (selectionChange)="onMonthChange()">
+                            <mat-option *ngFor="let month of months; let i = index" [value]="i + 1">{{ month
+                                }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Ano</mat-label>
+                        <mat-select [(value)]="selectedYear" (selectionChange)="onYearChange()">
+                            <mat-option *ngFor="let year of years" [value]="year">{{ year }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <button mat-raised-button color="primary" (click)="addNewRow()" [disabled]="editingExpense !== null">
+                    Adicionar Despesa
+                </button>
+            </div>
+            <button mat-raised-button color="primary" (click)="openAddExpenseModal()">
+                Adicionar Despesas
+            </button>
+        </mat-toolbar>
+
+
+        <mat-card-content>
+            <table mat-table [dataSource]="expenses" class="full-width">
+
+                <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Data</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else showDate">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <input matInput [matDatepicker]="picker" [(ngModel)]="expense.date" required>
+                                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showDate>{{ expense.date | date:'dd/MM/yyyy' }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Descrição</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else showDescription">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <input matInput [(ngModel)]="expense.description" required>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showDescription>{{ expense.description }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="value">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Valor</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else showValue">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <input matInput [(ngModel)]="expense.value" type="number" step="0.01" required>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showValue>{{ expense.value | currency:'BRL':'symbol':'1.2-2' }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Categoria</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else showCategory">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-select [(ngModel)]="expense.categoryId" required>
+                                    <mat-option *ngFor="let category of categories" [value]="category.id">
+                                        {{ category.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showCategory>{{ getCategoryName(expense.categoryId) }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="person">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Pessoa</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else showPerson">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-select [(ngModel)]="expense.personId" required>
+                                    <mat-option *ngFor="let person of persons" [value]="person.id">
+                                        {{ person.name }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showPerson>{{ getPersonName(expense.personId) }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="paymentMethod">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Método</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else showPaymentMethod">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <mat-select [(ngModel)]="expense.paymentMethod" required>
+                                    <mat-option value="CASH">Dinheiro</mat-option>
+                                    <mat-option value="CREDIT_CARD">Cartão de Crédito</mat-option>
+                                    <mat-option value="PIX">PIX</mat-option>
+                                    <mat-option value="DEBIT">Débito</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showPaymentMethod>{{ getPaymentMethodName(expense.paymentMethod) }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="card">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Cartão</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container
+                            *ngIf="isEditing(expense) && (expense.paymentMethod === 'CREDIT_CARD' || expense.paymentMethod === 'DEBIT'); else showCard">
+                            <mat-form-field appearance="outline" class="full-width"
+                                *ngIf="isEditing(expense) && (expense.paymentMethod === 'CREDIT_CARD' || expense.paymentMethod === 'DEBIT'); else showCard">
+                                <mat-select [(ngModel)]="expense.cardId"
+                                    [required]="expense.paymentMethod === 'CREDIT_CARD'">
+                                    <mat-option *ngIf="expense.paymentMethod !== 'CREDIT_CARD'"
+                                        value="">Nenhum</mat-option>
+                                    <mat-option *ngFor="let card of cards" [value]="card.id">{{ card.name
+                                        }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showCard>{{ getCardName(expense.cardId) }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="installment">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Parcelas</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container
+                            *ngIf="isEditing(expense) && expense.paymentMethod === 'CREDIT_CARD'; else showInstallment">
+                            <mat-form-field appearance="outline" class="full-width">
+                                <input matInput [(ngModel)]="expense.installment" type="number" min="1">
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #showInstallment>{{ expense.installment > 1 ? expense.installment : '-'
+                            }}</ng-template>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="bold">Ações</th>
+                    <td mat-cell *matCellDef="let expense">
+                        <ng-container *ngIf="isEditing(expense); else actionButtons">
+                            <button mat-button color="accent" (click)="saveRow(expense)">Salvar</button>
+                            <button mat-button color="warn" (click)="cancelEdit()">Cancelar</button>
+                        </ng-container>
+                        <ng-template #actionButtons>
+                            <button mat-icon-button (click)="editRow(expense)">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+                            <button mat-icon-button color="warn" (click)="deleteExpense(expense.id)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </ng-template>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[50, 100, 200]" [pageSize]="50" showFirstLastButtons></mat-paginator>
+        </mat-card-content>
+    </mat-card>
+</div>

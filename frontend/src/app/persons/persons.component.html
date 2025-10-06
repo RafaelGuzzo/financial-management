@@ -1,0 +1,57 @@
+<mat-toolbar>
+    <span>Pessoas</span>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" (click)="showForm = true">Adicionar Pessoa</button>
+</mat-toolbar>
+
+<div class="container" *ngIf="showForm">
+    <mat-card class="form-card">
+        <mat-card-title>{{ selectedPerson?.id ? 'Editar Pessoa' : 'Nova Pessoa' }}</mat-card-title>
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="form-content">
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nome</mat-label>
+                <input matInput formControlName="name" required>
+            </mat-form-field>
+
+            <div class="button-group">
+                <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Salvar</button>
+                <button mat-raised-button color="warn" type="button" (click)="cancelEdit()">Cancelar</button>
+            </div>
+
+        </form>
+    </mat-card>
+</div>
+
+<div class="container">
+    <mat-card class="card-table">
+        <mat-card-content>
+            <table mat-table [dataSource]="persons" class="mat-elevation-z1">
+
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Nome</th>
+                    <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Ações</th>
+                    <td mat-cell *matCellDef="let element">
+                        <button mat-icon-button color="primary" (click)="editPerson(element)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deletePerson(element.id)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20]"
+                (page)="onPageChange($event)" showFirstLastButtons>
+            </mat-paginator>
+        </mat-card-content>
+    </mat-card>
+</div>
