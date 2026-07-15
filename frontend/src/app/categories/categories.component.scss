@@ -1,0 +1,135 @@
+.spacer {
+    flex: 1 1 auto;
+}
+
+.container {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.form-card {
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-fields-row {
+    display: flex;
+    gap: 16px;
+    align-items: baseline; // Alterado para baseline para melhor alinhamento
+}
+
+.half-width {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    &.color-field {
+        justify-content: flex-end;
+        padding-top: 0.5em; // Ajuste mais pronunciado
+    }
+}
+
+.full-width {
+    width: 100%;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.color-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin: 0 auto; // Centraliza o quadrado de cor
+}
+
+.card-table {
+    overflow: auto;
+    width: 100%;
+}
+
+// Ajustes para a tabela
+table.mat-table {
+    width: 100%;
+
+    // Garante que a última linha seja exibida
+    .mat-row:last-child {
+        td {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        }
+    }
+
+    // Coluna de ações alinhada à direita
+    .mat-column-actions {
+        width: 100px; // Reduzido ainda mais
+        text-align: right;
+        padding-right: 16px !important;
+
+        button {
+            margin-left: 4px;
+            margin-right: 0;
+        }
+    }
+
+    // Ajusta as colunas de nome e cor
+    .mat-column-name {
+        width: 60%;
+        padding-left: 16px;
+    }
+
+    .mat-column-color {
+        width: 20%;
+        text-align: center;
+        padding: 0 16px;
+    }
+}
+
+.color-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+    justify-content: flex-end;
+
+    label {
+        font-size: 14px;
+        margin-bottom: 0.5rem;
+    }
+
+    .color-input {
+        height: 40px;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        width: 100%;
+    }
+}
+
+// Ajuste adicional para o formulário
+mat-form-field.half-width {
+    .mat-form-field-wrapper {
+        padding-bottom: 0;
+    }
+
+    .mat-form-field-flex {
+        align-items: center;
+    }
+}
+
+// Garante que o header da tabela também tenha o alinhamento correto
+.mat-header-cell.mat-column-actions {
+    justify-content: flex-end;
+    padding-right: 16px !important;
+}

@@ -1,0 +1,148 @@
+<section class="expense-form-container">
+  <c-card class="expense-card p-4 shadow-sm">
+    <h5 class="mb-4">{{ isEdit ? 'Editar Despesa' : 'Nova Despesa' }}</h5>
+
+    <form class="expense-form" (ngSubmit)="save()">
+      <div class="row g-3">
+        <!-- Descrição -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Descrição</label>
+          <input
+            cFormControl
+            type="text"
+            class="form-control"
+            [(ngModel)]="expense.description"
+            name="description"
+            required
+          />
+        </div>
+
+        <!-- Valor -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Valor</label>
+          <input
+            cFormControl
+            type="number"
+            class="form-control"
+            [(ngModel)]="expense.value"
+            name="value"
+            required
+          />
+        </div>
+
+        <!-- Data -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Data</label>
+          <input
+            cFormControl
+            type="date"
+            class="form-control"
+            [(ngModel)]="expense.date"
+            name="date"
+            required
+          />
+        </div>
+
+        <!-- Categoria -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Categoria</label>
+          <select
+            cSelect
+            class="form-select"
+            [(ngModel)]="expense.categoryId"
+            name="categoryId"
+            required
+          >
+            <option [ngValue]="0" disabled>Selecione uma categoria</option>
+            @for (cat of categories; track cat) {
+              <option [ngValue]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Pessoa -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Pessoa</label>
+          <select
+            cSelect
+            class="form-select"
+            [(ngModel)]="expense.personId"
+            name="personId"
+            required
+          >
+            <option [ngValue]="0" disabled>Selecione uma pessoa</option>
+            @for (p of persons; track p) {
+              <option [ngValue]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Método de Pagamento -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Método de Pagamento</label>
+          <select
+            cSelect
+            class="form-select"
+            [(ngModel)]="expense.paymentMethod"
+            name="paymentMethod"
+            required
+          >
+            <option value="CASH">Dinheiro</option>
+            <option value="CREDIT_CARD">Cartão de Crédito</option>
+            <option value="PIX">PIX</option>
+            <option value="DEBIT">Débito</option>
+          </select>
+        </div>
+
+        <!-- Cartão -->
+        @if (expense.paymentMethod === 'CREDIT_CARD' || expense.paymentMethod === 'DEBIT') {
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Cartão</label>
+            <select
+              cSelect
+              class="form-select"
+              [(ngModel)]="expense.cardId"
+              name="cardId"
+            >
+              <option [ngValue]="0">Nenhum</option>
+              @for (card of cards; track card) {
+                <option [ngValue]="card.id">{{ card.name }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- Parcelas -->
+        @if (expense.paymentMethod === 'CREDIT_CARD') {
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Parcelas</label>
+            <input
+              cFormControl
+              type="number"
+              class="form-control"
+              [(ngModel)]="expense.installment"
+              name="installment"
+              min="1"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- Ações -->
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button
+          cButton
+          color="danger"
+          variant="outline"
+          type="button"
+          (click)="cancel()"
+        >
+          Cancelar
+        </button>
+        <button cButton color="primary" type="submit">
+          Salvar
+        </button>
+      </div>
+    </form>
+  </c-card>
+</section>

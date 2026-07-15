@@ -1,0 +1,89 @@
+<div class="container-fluid">
+  <c-row>
+    <c-col xs="12">
+      <c-card class="mb-4 shadow-sm">
+        <c-card-header class="d-flex justify-content-between align-items-center bg-light">
+          <h5 class="mb-0 fw-semibold">Gerenciar Cartões</h5>
+          <button cButton color="primary" size="sm" (click)="toggleForm()">
+            <svg cIcon name="cil-plus" class="me-1"></svg>
+            {{ showForm ? 'Cancelar' : 'Adicionar Cartão' }}
+          </button>
+        </c-card-header>
+        <c-card-body>
+          <!-- Formulário -->
+          <div *ngIf="showForm" class="mb-4 p-3 border rounded bg-light">
+            <form cForm [formGroup]="form" (ngSubmit)="onSave()">
+              <c-row class="g-3">
+                <c-col md="6">
+                  <label cLabel for="name" class="small fw-bold">Nome do Cartão *</label>
+                  <input cFormControl id="name" type="text" formControlName="name" placeholder="Ex: Nubank, C6 Bank..." />
+                </c-col>
+                <c-col md="6">
+                  <label cLabel for="personId" class="small fw-bold">Pessoa Titular *</label>
+                  <select cFormSelect id="personId" formControlName="personId" class="form-select">
+                    <option [value]="0">Selecione uma pessoa</option>
+                    <option *ngFor="let person of people" [value]="person.id">{{ person.name }}</option>
+                  </select>
+                </c-col>
+                <c-col md="6">
+                  <label cLabel for="invoiceClosingDate" class="small fw-bold">Dia de Fechamento *</label>
+                  <input cFormControl id="invoiceClosingDate" type="number" formControlName="invoiceClosingDate" 
+                         min="1" max="31" placeholder="Ex: 10" />
+                  <small class="text-muted">Dia do mês em que a fatura fecha</small>
+                </c-col>
+                <c-col md="6">
+                  <label cLabel for="invoiceDueDate" class="small fw-bold">Dia de Vencimento *</label>
+                  <input cFormControl id="invoiceDueDate" type="number" formControlName="invoiceDueDate" 
+                         min="1" max="31" placeholder="Ex: 15" />
+                  <small class="text-muted">Dia do mês em que a fatura vence</small>
+                </c-col>
+                <c-col xs="12" class="mt-4">
+                  <button cButton color="success" type="submit" [disabled]="form.invalid" class="me-2">
+                    <svg cIcon name="cil-check" class="me-1"></svg> Salvar
+                  </button>
+                  <button cButton color="secondary" type="button" (click)="cancelEdit()">
+                    <svg cIcon name="cil-x" class="me-1"></svg> Cancelar
+                  </button>
+                </c-col>
+              </c-row>
+            </form>
+          </div>
+
+          <!-- Tabela -->
+          <div class="table-responsive">
+            <table cTable striped hover class="mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Nome</th>
+                  <th>Pessoa</th>
+                  <th class="text-center">Fechamento</th>
+                  <th class="text-center">Vencimento</th>
+                  <th class="text-center" style="width: 120px;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let card of cards">
+                  <td class="align-middle">{{ card.name }}</td>
+                  <td class="align-middle">{{ getPersonName(card.personId) }}</td>
+                  <td class="text-center align-middle">Dia {{ card.invoiceClosingDate }}</td>
+                  <td class="text-center align-middle">Dia {{ card.invoiceDueDate }}</td>
+                  <td class="text-center align-middle">
+                    <button cButton color="info" size="sm" variant="ghost" (click)="editCard(card)" title="Editar">
+                      <svg cIcon name="cil-pencil"></svg>
+                    </button>
+                    <button cButton color="danger" size="sm" variant="ghost" (click)="deleteCard(card.id)" title="Excluir">
+                      <svg cIcon name="cil-trash"></svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="cards.length === 0">
+                  <td colspan="5" class="text-center py-4 text-muted">Nenhum cartão cadastrado</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </c-card-body>
+      </c-card>
+    </c-col>
+  </c-row>
+</div>

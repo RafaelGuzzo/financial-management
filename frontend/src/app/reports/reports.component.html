@@ -1,0 +1,95 @@
+<div class="container-fluid">
+  <c-card class="mb-4 shadow-sm">
+    <c-card-header class="bg-light d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 fw-semibold">Comparativo Mensal</h5>
+      <div class="d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" [(ngModel)]="selectedYear" (change)="loadReports()">
+          <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+        </select>
+        <select class="form-select form-select-sm" [(ngModel)]="month1" (change)="loadReports()">
+          <option *ngFor="let m of months; let i = index" [value]="i + 1">{{ m }}</option>
+        </select>
+        <span class="text-muted">vs</span>
+        <select class="form-select form-select-sm" [(ngModel)]="month2" (change)="loadReports()">
+          <option *ngFor="let m of months; let i = index" [value]="i + 1">{{ m }}</option>
+        </select>
+      </div>
+    </c-card-header>
+    <c-card-body>
+      <c-row class="mb-4 g-3">
+        <c-col md="4">
+          <c-widget-stat-e
+            [title]="months[month1-1] + ' ' + selectedYear"
+            color="secondary"
+            [value]="(report1?.totalExpenses | currency:'BRL') || 'R$ 0,00'">
+          </c-widget-stat-e>
+        </c-col>
+        <c-col md="4">
+          <c-widget-stat-e
+            [title]="months[month2-1] + ' ' + selectedYear"
+            color="primary"
+            [value]="(report2?.totalExpenses | currency:'BRL') || 'R$ 0,00'">
+          </c-widget-stat-e>
+        </c-col>
+        <c-col md="4">
+          <c-widget-stat-e
+            title="Diferença"
+            [color]="getDiff(report1?.totalExpenses, report2?.totalExpenses) > 0 ? 'danger' : 'success'"
+            [value]="(getDiff(report1?.totalExpenses, report2?.totalExpenses) | currency:'BRL') || 'R$ 0,00'">
+            <div class="small">
+              Variação: <strong>{{ getDiffPercent(report1?.totalExpenses, report2?.totalExpenses) }}</strong>
+            </div>
+          </c-widget-stat-e>
+        </c-col>
+      </c-row>
+
+      <h6 class="fw-bold mb-3">Comparação por Categoria</h6>
+      <div class="table-responsive">
+        <table cTable striped hover>
+          <thead class="table-light">
+            <tr>
+              <th>Categoria</th>
+              <th class="text-end">{{ months[month1-1] }}</th>
+              <th class="text-end">{{ months[month2-1] }}</th>
+              <th class="text-end">Diferença</th>
+              <th class="text-end">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cat of getAllCategories()">
+              <td>{{ cat }}</td>
+              <td class="text-end">{{ (report1?.expensesByCategory?.[cat] || 0) | currency:'BRL' }}</td>
+              <td class="text-end">{{ (report2?.expensesByCategory?.[cat] || 0) | currency:'BRL' }}</td>
+              <td class="text-end" [ngClass]="{'text-danger': getDiff(report1?.expensesByCategory?.[cat], report2?.expensesByCategory?.[cat]) > 0, 'text-success': getDiff(report1?.expensesByCategory?.[cat], report2?.expensesByCategory?.[cat]) < 0}">
+                {{ getDiff(report1?.expensesByCategory?.[cat], report2?.expensesByCategory?.[cat]) | currency:'BRL' }}
+              </td>
+              <td class="text-end small">
+                {{ getDiffPercent(report1?.expensesByCategory?.[cat], report2?.expensesByCategory?.[cat]) }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <td>TOTAL</td>
+              <td class="text-end">{{ report1?.totalExpenses | currency:'BRL' }}</td>
+              <td class="text-end">{{ report2?.totalExpenses | currency:'BRL' }}</td>
+              <td class="text-end">{{ getDiff(report1?.totalExpenses, report2?.totalExpenses) | currency:'BRL' }}</td>
+              <td class="text-end">{{ getDiffPercent(report1?.totalExpenses, report2?.totalExpenses) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </c-card-body>
+  </c-card>
+
+  <c-row>
+    <c-col md="6">
+      <app-expense-charts [reportData]="report1"></app-expense-charts>
+      <div class="text-center mt-2 mb-4"><small class="text-muted">{{ months[month1-1] }}</small></div>
+    </c-col>
+    <c-col md="6">
+      <app-expense-charts [reportData]="report2"></app-expense-charts>
+      <div class="text-center mt-2 mb-4"><small class="text-muted">{{ months[month2-1] }}</small></div>
+    </c-col>
+  </c-row>
+</div>

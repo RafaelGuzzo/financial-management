@@ -1,0 +1,22 @@
+# Node
+node_modules/
+dist/
+
+# Java / Maven
+target/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+postgres_data/
+*.log
+
+# Env files
+.env

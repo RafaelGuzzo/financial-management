@@ -1,0 +1,154 @@
+// Estilos responsivos e modernos para o componente home
+
+// Botão Adicionar Despesa
+.btn-add-expense {
+  white-space: nowrap;
+  font-weight: 500;
+  
+  @media (max-width: 576px) {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+// Cards de despesas mobile
+.card {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+  
+  &.border-start {
+    border-radius: 0.375rem;
+  }
+}
+
+// Tabela responsiva
+.table-responsive {
+  border-radius: 0.375rem;
+  
+  table {
+    font-size: 0.9rem;
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+      border-color: #dee2e6;
+    }
+    
+    td {
+      vertical-align: middle;
+      padding: 0.75rem;
+    }
+  }
+}
+
+// Inputs e selects em modo edição
+input.form-control-sm,
+select.form-select-sm {
+  font-size: 0.875rem;
+  
+  &:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  }
+}
+
+// Widgets responsivos
+c-widget-stat-e {
+  height: 100%;
+}
+
+// Mensagens de validação
+.text-danger {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+// Espaçamento responsivo
+.container-fluid {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  
+  @media (min-width: 768px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+// Breadcrumb responsivo
+c-breadcrumb-router {
+  font-size: 0.875rem;
+}
+
+// Header do card
+c-card-header {
+  border-bottom: 1px solid #dee2e6;
+  
+  h5 {
+    margin-bottom: 0;
+    color: #212529;
+  }
+}
+
+// Botões de ação
+button[cButton] {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Responsividade para tablets
+@media (max-width: 768px) {
+  .d-flex {
+    &.gap-2 {
+      gap: 0.5rem !important;
+    }
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .form-label {
+    margin-bottom: 0.25rem;
+  }
+}
+
+// Responsividade para celulares
+@media (max-width: 576px) {
+  .row {
+    &.g-2 {
+      gap: 0.5rem !important;
+    }
+    
+    &.g-3 {
+      gap: 0.75rem !important;
+    }
+  }
+  
+  .card-body {
+    padding: 1rem !important;
+  }
+  
+  .small {
+    font-size: 0.8rem;
+  }
+  
+  h6 {
+    font-size: 0.95rem;
+  }
+  
+  h5 {
+    font-size: 1rem;
+  }
+}

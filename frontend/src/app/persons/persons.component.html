@@ -1,0 +1,66 @@
+<div class="container-fluid">
+  <c-row>
+    <c-col xs="12">
+      <c-card class="mb-4">
+        <c-card-header class="d-flex justify-content-between align-items-center">
+          <strong>Pessoas</strong>
+          <button cButton color="primary" (click)="toggleForm()">
+            <svg cIcon name="cil-plus" class="me-1"></svg>
+            {{ showForm ? 'Cancelar' : 'Adicionar Pessoa' }}
+          </button>
+        </c-card-header>
+        <c-card-body>
+          <!-- Formulário -->
+          <div *ngIf="showForm" class="mb-4">
+            <form cForm [formGroup]="form" (ngSubmit)="onSave()">
+              <c-row class="mb-3">
+                <c-col md="6">
+                  <label cLabel for="name">Nome *</label>
+                  <input cFormControl id="name" type="text" formControlName="name" placeholder="Digite o nome" />
+                </c-col>
+              </c-row>
+              <c-row>
+                <c-col>
+                  <button cButton color="success" type="submit" [disabled]="form.invalid" class="me-2">
+                    <svg cIcon name="cil-check" class="me-1"></svg>
+                    Salvar
+                  </button>
+                  <button cButton color="secondary" type="button" (click)="cancelEdit()">
+                    <svg cIcon name="cil-x" class="me-1"></svg>
+                    Cancelar
+                  </button>
+                </c-col>
+              </c-row>
+            </form>
+          </div>
+
+          <!-- Tabela -->
+          <table cTable striped hover>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th class="text-center" style="width: 150px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let person of persons">
+                <td>{{ person.name }}</td>
+                <td class="text-center">
+                  <button cButton color="info" size="sm" variant="ghost" (click)="editPerson(person)" class="me-1">
+                    <svg cIcon name="cil-pencil"></svg>
+                  </button>
+                  <button cButton color="danger" size="sm" variant="ghost" (click)="deletePerson(person.id)">
+                    <svg cIcon name="cil-trash"></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="persons.length === 0">
+                <td colspan="2" class="text-center text-muted">Nenhuma pessoa cadastrada</td>
+              </tr>
+            </tbody>
+          </table>
+        </c-card-body>
+      </c-card>
+    </c-col>
+  </c-row>
+</div>
