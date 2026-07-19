@@ -1,6 +1,7 @@
 # Node
 node_modules/
 dist/
+coverage/
 
 # Java / Maven
 target/
@@ -18,5 +19,12 @@ Thumbs.db
 postgres_data/
 *.log
 
-# Env files
+# Environment files
 .env
+.env.local
+.env.*
+!.env.example
+
+# Documentation specs (local drafts)
+docs/specs/*
+!docs/specs/.gitkeep

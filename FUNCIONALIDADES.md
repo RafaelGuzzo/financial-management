@@ -1,263 +1,50 @@
 # 📋 Funcionalidades Implementadas
 
-Este documento detalha todas as funcionalidades implementadas no Sistema de Gerenciamento Financeiro.
+## Vocação deste documento
 
-## ✅ Funcionalidades Principais
+Este documento descreve as funcionalidades principais do sistema com foco em valor para o usuário e em como elas se organizam em módulos de negócio.
 
-### 1. Gestão de Despesas
+## Funcionalidades centrais
 
-#### Listagem de Despesas
-- Visualização em tabela com todas as despesas do mês selecionado
+### 1. Gestão de despesas
+- Cadastro, edição e exclusão de despesas
 - Filtros por mês e ano
-- Exibição de informações completas:
-  - Data da despesa
-  - Descrição
-  - Valor em reais (formatado)
-  - Categoria
-  - Pessoa responsável
-  - Forma de pagamento
-  - Cartão utilizado (quando aplicável)
-  - Informação de parcelas (X/Y)
+- Campos como data, descrição, valor, categoria, pessoa, forma de pagamento e cartão
+- Validações para garantir consistência das informações
 
-#### Adição de Despesas
-- Botão "Adicionar Despesa" que cria uma nova linha na tabela
-- Edição inline diretamente na tabela
-- Campos disponíveis:
-  - **Data**: Seletor de data
-  - **Descrição**: Campo de texto livre
-  - **Valor**: Campo numérico com 2 casas decimais
-  - **Categoria**: Dropdown com categorias cadastradas
-  - **Pessoa**: Dropdown com pessoas cadastradas
-  - **Forma de Pagamento**: Dropdown com opções:
-    - Dinheiro
-    - Cartão de Crédito
-    - PIX
-    - Débito
-  - **Cartão**: Dropdown habilitado apenas quando forma = Cartão de Crédito
-  - **Parcelas**: Campo numérico (1-48) habilitado apenas para Cartão de Crédito
+### 2. Parcelamento em cartão de crédito
+- Suporte a despesas parceladas
+- Geração de parcelas sequenciais para acompanhamento mensal
+- Vinculação das parcelas ao mesmo cartão e categoria
 
-#### Edição de Despesas
-- Clique no ícone de editar (lápis) para entrar no modo de edição
-- Todos os campos se tornam editáveis inline
-- Botões de ação:
-  - ✓ (check) para salvar
-  - ✗ (x) para cancelar
-- Validações em tempo real
+### 3. Resumos e gráficos
+- Totais mensais e distribuição por categoria, pessoa e forma de pagamento
+- Visualizações interativas para análise rápida de gastos
+- Atualização automática conforme os dados mudam
 
-#### Exclusão de Despesas
-- Clique no ícone de excluir (lixeira)
-- Confirmação antes de excluir
-- Atualização automática dos gráficos e totais
+### 4. Cadastros auxiliares
+- Pessoas
+- Categorias
+- Cartões
 
-#### Parcelamento em Cartão de Crédito
-- Ao cadastrar uma despesa com cartão de crédito e parcelas > 1:
-  - A primeira parcela é criada na data informada
-  - Parcelas subsequentes são criadas automaticamente nos meses seguintes
-  - Cada parcela tem descrição atualizada: "Descrição (Parcela 2/12)"
-  - Valor é dividido igualmente entre as parcelas
-  - Todas as parcelas ficam vinculadas ao mesmo cartão e categoria
+Cada módulo oferece operações básicas de cadastro, edição e exclusão, além de validação de entrada.
 
-### 2. Gráficos de Pizza Interativos
-
-#### Gráfico por Categoria
-- Exibe distribuição percentual das despesas por categoria
-- Cores personalizadas para cada categoria
-- Tooltip mostra:
-  - Nome da categoria
-  - Valor em reais
-  - Percentual do total
-- Atualização automática ao modificar despesas
-
-#### Gráfico por Pessoa
-- Exibe distribuição de gastos por pessoa
-- Cores diferenciadas automaticamente
-- Tooltip mostra:
-  - Nome da pessoa
-  - Valor total gasto
-  - Percentual do total
-- Útil para controle de gastos compartilhados
-
-#### Gráfico por Forma de Pagamento
-- Exibe distribuição por método de pagamento
-- Categorias:
-  - Dinheiro
-  - Cartão de Crédito
-  - PIX
-  - Débito
-- Tooltip mostra valor e percentual
-- Ajuda a entender preferências de pagamento
-
-### 3. Cards de Resumo
-
-#### Total de Despesas
-- Card vermelho destacando o total gasto no mês
-- Valor formatado em reais (R$)
-- Atualização em tempo real
-
-#### Resumo por Categoria
-- Lista todas as categorias com gastos
-- Valor individual por categoria
-- Formatação em moeda brasileira
-
-#### Resumo por Pessoa
-- Lista todas as pessoas com gastos
-- Valor individual por pessoa
-- Útil para divisão de contas
-
-#### Resumo por Forma de Pagamento
-- Lista formas de pagamento utilizadas
-- Valor total por forma
-- Ajuda no planejamento financeiro
-
-### 4. Cadastro de Pessoas
-
-#### Funcionalidades
-- Listagem em tabela paginada
-- Adicionar nova pessoa
-- Editar pessoa existente
-- Excluir pessoa
-- Validação: nome obrigatório
-
-#### Interface
-- Formulário modal/inline
-- Campos:
-  - Nome (obrigatório)
-- Ações:
-  - Botão "Adicionar Pessoa"
-  - Ícones de editar e excluir em cada linha
-- Paginação configurável (5, 10, 20 itens)
-
-### 5. Cadastro de Categorias
-
-#### Funcionalidades
-- Listagem em tabela paginada
-- Adicionar nova categoria
-- Editar categoria existente
-- Excluir categoria
-- Seletor de cor para identificação visual
-
-#### Interface
-- Formulário inline
-- Campos:
-  - Nome (obrigatório)
-  - Cor (seletor de cor HTML5)
-- Visualização da cor na tabela
-- Paginação configurável
-
-#### Categorias Padrão
-O sistema vem com categorias pré-cadastradas:
-- Alimentação (#FF5733)
-- Transporte (#33FF57)
-- Moradia (#3357FF)
-- Lazer (#F033FF)
-- Saúde (#33FFF5)
-- Educação (#FF33F5)
-
-### 6. Cadastro de Cartões
-
-#### Funcionalidades
-- Listagem em tabela paginada
-- Adicionar novo cartão
-- Editar cartão existente
-- Excluir cartão
-- Vinculação com pessoa titular
-
-#### Interface
-- Formulário inline
-- Campos:
-  - Nome do cartão (obrigatório)
-  - Pessoa titular (dropdown, obrigatório)
-  - Dia de fechamento da fatura (1-31)
-  - Dia de vencimento da fatura (1-31)
-- Exibição do nome da pessoa na listagem
-- Paginação configurável
-
-### 7. Autenticação e Segurança
-
-#### Sistema de Login
+### 5. Autenticação e segurança
+- Login com e-mail e senha
 - Autenticação via JWT
-- Tela de login com email e senha
-- Token armazenado no localStorage
-- Interceptor HTTP para adicionar token automaticamente
-- Redirecionamento automático se não autenticado
+- Proteção de rotas e uso de token para acesso às funcionalidades
+- Senhas protegidas com hashing
 
-#### Usuário Padrão
-- Email: admin@example.com
-- Senha: admin123
-- Criado automaticamente na primeira execução
+## Experiência do usuário
 
-#### Segurança
-- Senhas criptografadas com BCrypt
-- Tokens JWT com expiração configurável
-- Rotas protegidas no backend
-- Guards no frontend
+- Interface responsiva e organizada
+- Feedback visual para ações realizadas
+- Mensagens de confirmação e validação em tempo real
+- Fluxo simples para registrar e acompanhar despesas
 
-## 🎨 Interface do Usuário
+## Observações de negócio
 
-### Design
-- Framework CoreUI 5 para componentes
-- Bootstrap 5 para layout responsivo
-- Angular Material para componentes adicionais
-- Ícones CoreUI Icons
-- Design moderno e limpo
-
-### Responsividade
-- Layout adaptável para desktop, tablet e mobile
-- Tabelas com scroll horizontal em telas pequenas
-- Gráficos redimensionáveis
-- Menu lateral colapsável
-
-### Experiência do Usuário
-- Feedback visual em todas as ações
-- Mensagens de sucesso e erro (toasts)
-- Confirmações antes de exclusões
-- Loading states durante requisições
-- Validações em tempo real
-
-## 🔄 Fluxo de Dados
-
-### Backend → Frontend
-1. API REST retorna dados em JSON
-2. Services Angular fazem requisições HTTP
-3. Componentes recebem dados via Observables
-4. Interface é atualizada automaticamente
-
-### Frontend → Backend
-1. Usuário interage com formulários
-2. Dados são validados no frontend
-3. Requisição HTTP é enviada
-4. Backend valida e processa
-5. Resposta é retornada
-6. Interface é atualizada
-
-## 📊 Relatórios
-
-### Relatório Mensal
-Endpoint: `GET /api/reports/monthly?year=2024&month=12`
-
-Retorna:
-```json
-{
-  "year": 2024,
-  "month": 12,
-  "totalExpenses": 5432.10,
-  "expensesByCategory": {
-    "Alimentação": 1200.50,
-    "Transporte": 800.00,
-    "Moradia": 2000.00
-  },
-  "expensesByPerson": {
-    "João": 3000.00,
-    "Maria": 2432.10
-  },
-  "expensesByCard": {
-    "Nubank": 1500.00,
-    "C6 Bank": 800.00
-  },
-  "expensesByPaymentMethod": {
-    "CREDIT_CARD": 2300.00,
-    "PIX": 1500.00,
-    "CASH": 1632.10
+O sistema foi pensado para ser prático no uso diário, com foco em controle financeiro pessoal e compartilhado, sem depender de uma interface excessivamente complexa.
   }
 }
 ```

@@ -1,322 +1,99 @@
 # 🚀 Guia de Instalação e Execução
 
-Este guia fornece instruções detalhadas para configurar e executar o Sistema de Gerenciamento Financeiro.
+## Vocação deste documento
+
+Este guia tem como objetivo orientar a instalação, configuração e validação do projeto em ambientes locais ou com Docker, de forma simples e reproduzível.
 
 ## Pré-requisitos
 
-Antes de começar, certifique-se de ter instalado em seu sistema:
-
 ### Obrigatórios
-- **Java Development Kit (JDK) 21** ou superior
-- **Node.js 18+** e **npm**
-- **PostgreSQL 14+**
-- **Maven 3.8+**
+- Java 21 ou superior
+- Maven 3.8+ ou wrapper do projeto
+- Node.js 18+ e npm
+- PostgreSQL 14+ (ou uso via Docker)
 
-### Opcionais (para execução com Docker)
-- **Docker** 20.10+
-- **Docker Compose** 2.0+
+### Opcionais
+- Docker e Docker Compose para execução completa do ambiente
 
-## Opção 1: Execução com Docker (Recomendado)
+## Opção 1: Execução com Docker (recomendada)
 
-Esta é a forma mais simples de executar o sistema completo.
-
-### Passo 1: Configurar Variáveis de Ambiente
-
-Copie o arquivo de exemplo e configure as variáveis:
+### 1. Criar o arquivo de ambiente
 
 ```bash
 cp .env.example .env
 ```
 
-Edite o arquivo `.env` conforme necessário. As configurações padrão geralmente funcionam bem para desenvolvimento local.
+> O arquivo `.env` deve permanecer local e não deve ser versionado.
 
-### Passo 2: Iniciar os Containers
-
-Execute o comando para construir e iniciar todos os serviços:
+### 2. Subir os serviços
 
 ```bash
 docker-compose up --build
 ```
 
-Este comando irá:
-- Criar o container do PostgreSQL
-- Construir e iniciar o backend Spring Boot
-- Construir e iniciar o frontend Angular
-- Configurar a rede entre os containers
+### 3. Acessar a aplicação
 
-### Passo 3: Acessar a Aplicação
+- Frontend: http://localhost:4200
+- Backend: http://localhost:8080
+- PostgreSQL: localhost:5432
 
-Após alguns minutos, a aplicação estará disponível:
+### 4. Login inicial
 
-- **Frontend:** http://localhost:4200
-- **Backend API:** http://localhost:8080
-- **PostgreSQL:** localhost:5432
+- E-mail: admin@example.com
+- Senha: admin123
 
-### Passo 4: Fazer Login
+## Opção 2: Execução local sem Docker
 
-Use as credenciais padrão:
-- **Email:** admin@example.com
-- **Senha:** admin123
+### 1. Preparar o banco de dados
 
-### Comandos Úteis do Docker
+Crie um banco PostgreSQL e ajuste as credenciais conforme o ambiente local.
 
-```bash
-# Parar os containers
-docker-compose down
-
-# Ver logs em tempo real
-docker-compose logs -f
-
-# Ver logs apenas do backend
-docker-compose logs -f backend
-
-# Ver logs apenas do frontend
-docker-compose logs -f frontend
-
-# Reconstruir apenas um serviço
-docker-compose up --build backend
-
-# Limpar volumes (remove dados do banco)
-docker-compose down -v
-```
-
-## Opção 2: Execução Manual (Desenvolvimento)
-
-Para desenvolvimento local sem Docker, siga estes passos:
-
-### Passo 1: Configurar o Banco de Dados
-
-#### 1.1 Criar o Banco de Dados
-
-Conecte-se ao PostgreSQL e execute:
-
-```sql
-CREATE DATABASE financial_management;
-```
-
-#### 1.2 Criar Usuário (Opcional)
-
-```sql
-CREATE USER financial_user WITH PASSWORD 'sua_senha_segura';
-GRANT ALL PRIVILEGES ON DATABASE financial_management TO financial_user;
-```
-
-### Passo 2: Configurar o Backend
-
-#### 2.1 Navegar até a pasta do backend
+### 2. Backend
 
 ```bash
 cd backend
-```
-
-#### 2.2 Configurar application.properties
-
-Edite o arquivo `src/main/resources/application.properties`:
-
-```properties
-# Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/financial_management
-spring.datasource.username=postgres
-spring.datasource.password=sua_senha
-
-# JPA Configuration
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.format_sql=true
-
-# Flyway Configuration
-spring.flyway.enabled=true
-spring.flyway.baseline-on-migrate=true
-spring.flyway.locations=classpath:db/migration
-
-# JWT Configuration
-jwt.secret=sua-chave-secreta-muito-longa-e-segura-aqui
-jwt.expiration=86400000
-
-# Server Configuration
-server.port=8080
-```
-
-#### 2.3 Instalar Dependências e Compilar
-
-```bash
-./mvnw clean install
-```
-
-Se estiver no Windows:
-```bash
-mvnw.cmd clean install
-```
-
-#### 2.4 Executar o Backend
-
-```bash
+./mvnw test
 ./mvnw spring-boot:run
 ```
 
-O backend estará disponível em: http://localhost:8080
-
-Você pode verificar se está funcionando acessando:
-- Health check: http://localhost:8080/actuator/health
-
-### Passo 3: Configurar o Frontend
-
-#### 3.1 Navegar até a pasta do frontend
+### 3. Frontend
 
 ```bash
 cd frontend
-```
-
-#### 3.2 Instalar Dependências
-
-```bash
 npm install
-```
-
-Este processo pode levar alguns minutos na primeira vez.
-
-#### 3.3 Configurar o Ambiente
-
-Edite o arquivo `src/environments/environment.ts`:
-
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api'
-};
-```
-
-#### 3.4 Executar o Frontend
-
-```bash
 npm start
 ```
 
-Ou:
-
-```bash
-ng serve
-```
-
-O frontend estará disponível em: http://localhost:4200
-
-O navegador será aberto automaticamente.
-
-### Passo 4: Fazer Login
-
-Use as credenciais padrão:
-- **Email:** admin@example.com
-- **Senha:** admin123
-
-## Verificação da Instalação
+## Validação básica
 
 ### Backend
 
-Teste os endpoints da API:
-
 ```bash
-# Health check
 curl http://localhost:8080/actuator/health
-
-# Login (deve retornar um token JWT)
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@example.com","password":"admin123"}'
 ```
 
 ### Frontend
 
-1. Acesse http://localhost:4200
-2. Você deve ver a tela de login
-3. Faça login com as credenciais padrão
-4. Você deve ser redirecionado para a página inicial
+Acesse http://localhost:4200 e confirme que a tela de login é carregada corretamente.
 
-## Solução de Problemas Comuns
+## Troubleshooting
 
-### Problema: Erro de conexão com o banco de dados
+### Problemas com banco de dados
+- Verifique se o PostgreSQL está ativo.
+- Confirme se as credenciais no arquivo de configuração batem com o ambiente.
+- Veja os logs do backend para identificar migrações ou conexão com o banco.
 
-**Sintoma:** Backend não inicia, erro "Connection refused" ou "FATAL: database does not exist"
+### Porta ocupada
+- Se a porta 8080 ou 4200 estiver em uso, altere a configuração local antes de iniciar os serviços.
 
-**Solução:**
-1. Verifique se o PostgreSQL está rodando:
-   ```bash
-   # Linux/Mac
-   sudo systemctl status postgresql
-   
-   # Windows
-   # Verifique no Gerenciador de Serviços
-   ```
+### Dependências do frontend
+- Se ocorrer erro ao instalar pacotes, limpe o cache do npm e reinstale as dependências.
 
-2. Verifique se o banco de dados existe:
-   ```bash
-   psql -U postgres -l
-   ```
+## Boas práticas
 
-3. Verifique as credenciais no `application.properties`
-
-### Problema: Porta 8080 já está em uso
-
-**Sintoma:** Erro "Port 8080 is already in use"
-
-**Solução:**
-1. Encontre o processo usando a porta:
-   ```bash
-   # Linux/Mac
-   lsof -i :8080
-   
-   # Windows
-   netstat -ano | findstr :8080
-   ```
-
-2. Mate o processo ou altere a porta no `application.properties`:
-   ```properties
-   server.port=8081
-   ```
-
-### Problema: Erro ao instalar dependências do npm
-
-**Sintoma:** Erros durante `npm install`
-
-**Solução:**
-1. Limpe o cache do npm:
-   ```bash
-   npm cache clean --force
-   ```
-
-2. Delete a pasta `node_modules` e `package-lock.json`:
-   ```bash
-   rm -rf node_modules package-lock.json
-   ```
-
-3. Instale novamente:
-   ```bash
-   npm install
-   ```
-
-### Problema: Erro de CORS no frontend
-
-**Sintoma:** Erro "CORS policy" no console do navegador
-
-**Solução:**
-1. Verifique se o backend está configurado para aceitar requisições do frontend
-2. No backend, o arquivo `SecurityConfig.java` deve ter configuração CORS adequada
-3. Verifique se a URL da API no frontend está correta
-
-### Problema: Migrações Flyway falhando
-
-**Sintoma:** Erro ao iniciar o backend relacionado ao Flyway
-
-**Solução:**
-1. Limpe o histórico do Flyway:
-   ```sql
-   DROP TABLE IF EXISTS flyway_schema_history;
-   ```
-
-2. Recrie o banco de dados:
-   ```sql
-   DROP DATABASE financial_management;
-   CREATE DATABASE financial_management;
-   ```
+- Mantenha o arquivo `.env` local e sem commit.
+- Use o Docker para validar o fluxo completo sempre que possível.
+- Antes de entregar alterações, teste o backend e o frontend afetados.
 
 3. Reinicie o backend
 
