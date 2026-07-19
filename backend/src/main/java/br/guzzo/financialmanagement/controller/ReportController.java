@@ -1,5 +1,6 @@
 package br.guzzo.financialmanagement.controller;
 
+import br.guzzo.financialmanagement.dto.response.DashboardReportResponse;
 import br.guzzo.financialmanagement.dto.response.ReportResponse;
 import br.guzzo.financialmanagement.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,12 @@ public class ReportController {
             @RequestParam int year,
             @RequestParam int month) {
         return ResponseEntity.ok(reportService.generateMonthlyReport(year, month));
+    }
+
+    @GetMapping("/dashboard-monthly")
+    public ResponseEntity<DashboardReportResponse> generateDashboardMonthlyReport(
+            @RequestParam int year,
+            @RequestParam int month) {
+        return ResponseEntity.ok(reportService.generateDashboardMonthlyReport(year, month));
     }
 }
