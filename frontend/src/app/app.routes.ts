@@ -20,6 +20,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
+      { path: 'expenses', loadComponent: () => import('./expenses/expenses.component').then(m => m.ExpensesComponent) },
       { path: 'reports', loadComponent: () => import('./reports/reports.component').then(m => m.ReportsComponent) },
       {
         path: 'expense',

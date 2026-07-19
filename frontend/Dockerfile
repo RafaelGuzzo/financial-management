@@ -1,9 +1,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install -g @angular/cli@19.2.8 && npm ci
+RUN npm install -g npm@11.6.1 && npm ci
 COPY . .
-RUN ng build --configuration production
+RUN npm run build -- --configuration production
 
 FROM nginxinc/nginx-unprivileged:alpine3.22 AS runner
 USER nginx

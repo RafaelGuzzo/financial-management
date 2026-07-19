@@ -1,80 +1,179 @@
-<!-- src/app/expenses/expenses.component.html -->
-<mat-toolbar color="primary">
-    <span>Despesas</span>
-    <span class="spacer"></span>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-        <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="openExpenseForm()">
-            <mat-icon>add</mat-icon>
-            <span>Adicionar Despesa</span>
-        </button>
-    </mat-menu>
-</mat-toolbar>
-
-<div class="container">
-    <mat-card>
-        <mat-card-content>
-            <div class="table-container">
-                <table mat-table [dataSource]="expenses" class="full-width">
-                    <!-- Date Column -->
-                    <ng-container matColumnDef="date">
-                        <th mat-header-cell *matHeaderCellDef>Data</th>
-                        <td mat-cell *matCellDef="let element">{{ element.date | date:'dd/MM/yyyy' }}</td>
-                    </ng-container>
-
-                    <!-- Description Column -->
-                    <ng-container matColumnDef="description">
-                        <th mat-header-cell *matHeaderCellDef>Descrição</th>
-                        <td mat-cell *matCellDef="let element">{{ element.description }}</td>
-                    </ng-container>
-
-                    <!-- Value Column -->
-                    <ng-container matColumnDef="value">
-                        <th mat-header-cell *matHeaderCellDef>Valor</th>
-                        <td mat-cell *matCellDef="let element">{{ element.value | currency:'BRL':'symbol':'1.2-2' }}</td>
-                    </ng-container>
-
-                    <!-- Category Column -->
-                    <ng-container matColumnDef="categoryName">
-                        <th mat-header-cell *matHeaderCellDef>Categoria</th>
-                        <td mat-cell *matCellDef="let element">{{ element.categoryName }}</td>
-                    </ng-container>
-
-                    <!-- Person Column -->
-                    <ng-container matColumnDef="personName">
-                        <th mat-header-cell *matHeaderCellDef>Pessoa</th>
-                        <td mat-cell *matCellDef="let element">{{ element.personName }}</td>
-                    </ng-container>
-
-                    <!-- Payment Method Column -->
-                    <ng-container matColumnDef="paymentMethod">
-                        <th mat-header-cell *matHeaderCellDef>Método</th>
-                        <td mat-cell *matCellDef="let element">{{ getPaymentMethodName(element.paymentMethod) }}</td>
-                    </ng-container>
-
-                    <!-- Actions Column -->
-                    <ng-container matColumnDef="actions">
-                        <th mat-header-cell *matHeaderCellDef>Ações</th>
-                        <td mat-cell *matCellDef="let element">
-                            <button mat-icon-button color="primary" (click)="openExpenseForm(element)">
-                                <mat-icon>edit</mat-icon>
-                            </button>
-                            <button mat-icon-button color="warn" (click)="deleteExpense(element.id)">
-                                <mat-icon>delete</mat-icon>
-                            </button>
-                        </td>
-                    </ng-container>
-
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
-
-                <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20]" 
-                    (page)="onPageChange($event)" showFirstLastButtons>
-                </mat-paginator>
+<div class="container-fluid expenses-page">
+    <c-card class="shadow-sm mb-4">
+        <c-card-header class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4 class="mb-0">Despesas</h4>
+                <small class="text-body-secondary">Gestao mensal de despesas</small>
             </div>
-        </mat-card-content>
-    </mat-card>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedMonth" (change)="onMonthChange()">
+                    <option *ngFor="let month of months; let i = index" [value]="i + 1">{{ month }}</option>
+                </select>
+
+                <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedYear" (change)="onYearChange()">
+                    <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+                </select>
+
+                <button cButton color="primary" size="sm" (click)="openExpenseForm()">
+                    <svg cIcon name="cil-plus" class="me-1"></svg>
+                    Novo formulario
+                </button>
+
+                <button cButton color="success" size="sm" variant="outline" (click)="addNewRow()">
+                    <svg cIcon name="cil-pencil" class="me-1"></svg>
+                    Edicao inline
+                </button>
+
+                <c-dropdown alignment="end" variant="nav-item">
+                    <button [caret]="false" cDropdownToggle class="btn btn-sm btn-outline-secondary">
+                        <svg cIcon name="cil-settings" class="me-1"></svg>
+                        Colunas
+                    </button>
+                    <div cDropdownMenu class="p-2" style="min-width: 220px;">
+                        <div *ngFor="let col of displayedColumns" class="form-check small">
+                            <input class="form-check-input" type="checkbox" [id]="'col-' + col" [checked]="columnVisibility[col]" (change)="toggleColumn(col)">
+                            <label class="form-check-label" [for]="'col-' + col">{{ col | titlecase }}</label>
+                        </div>
+                    </div>
+                </c-dropdown>
+            </div>
+        </c-card-header>
+
+        <c-card-body class="p-0 position-relative">
+            <div *ngIf="isLoading()" class="loading-overlay">
+                <c-spinner size="sm"></c-spinner>
+                <span>Carregando despesas...</span>
+            </div>
+
+            <div *ngIf="errorMessage()" class="alert alert-danger m-3 mb-0" role="alert">
+                {{ errorMessage() }}
+            </div>
+
+            <div *ngIf="!isLoading() && !errorMessage() && expenses.length === 0" class="p-4 text-center text-body-secondary">
+                Nenhuma despesa encontrada para o periodo selecionado.
+            </div>
+
+            <div *ngIf="!isLoading() && !errorMessage() && expenses.length > 0" class="table-responsive expenses-table-wrap">
+                <table cTable striped hover class="mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th *ngIf="columnVisibility['date']">Data</th>
+                            <th *ngIf="columnVisibility['description']">Descricao</th>
+                            <th *ngIf="columnVisibility['value']">Valor</th>
+                            <th *ngIf="columnVisibility['category']">
+                                Categoria
+                                <button class="btn btn-link btn-sm p-0 ms-1" (click)="sortCategories('name')" aria-label="Ordenar categorias">
+                                    <svg cIcon name="cil-sort-alpha-down" size="sm"></svg>
+                                </button>
+                            </th>
+                            <th *ngIf="columnVisibility['person']">Pessoa</th>
+                            <th *ngIf="columnVisibility['paymentMethod']">Metodo</th>
+                            <th *ngIf="columnVisibility['card']">Cartao</th>
+                            <th *ngIf="columnVisibility['installment']">Parcelas</th>
+                            <th *ngIf="columnVisibility['dueDate']">Vencimento</th>
+                            <th *ngIf="columnVisibility['isToReceive']">A Receber</th>
+                            <th *ngIf="columnVisibility['actions']" class="text-center">Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let expense of expenses" [ngClass]="getRowClass(expense)">
+                            <ng-container *ngIf="isEditing(expense); else viewMode">
+                                <td *ngIf="columnVisibility['date']">
+                                    <input type="date" class="form-control form-control-sm inline-edit-input" [(ngModel)]="editingExpense!.date" />
+                                </td>
+                                <td *ngIf="columnVisibility['description']">
+                                    <input type="text" class="form-control form-control-sm inline-edit-input" [(ngModel)]="editingExpense!.description" placeholder="Descricao" />
+                                </td>
+                                <td *ngIf="columnVisibility['value']">
+                                    <input type="number" class="form-control form-control-sm inline-edit-input" [(ngModel)]="editingExpense!.value" placeholder="Valor" step="0.01" />
+                                </td>
+                                <td *ngIf="columnVisibility['category']">
+                                    <select class="form-select form-select-sm inline-edit-input" [(ngModel)]="editingExpense!.categoryId">
+                                        <option [value]="0">Selecione...</option>
+                                        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                                    </select>
+                                </td>
+                                <td *ngIf="columnVisibility['person']">
+                                    <select class="form-select form-select-sm inline-edit-input" [(ngModel)]="editingExpense!.personId">
+                                        <option [value]="0">Selecione...</option>
+                                        <option *ngFor="let person of persons" [value]="person.id">{{ person.name }}</option>
+                                    </select>
+                                </td>
+                                <td *ngIf="columnVisibility['paymentMethod']">
+                                    <select class="form-select form-select-sm inline-edit-input" [(ngModel)]="editingExpense!.paymentMethod">
+                                        <option value="CASH">Dinheiro</option>
+                                        <option value="CREDIT_CARD">Cartao de Credito</option>
+                                        <option value="PIX">PIX</option>
+                                        <option value="DEBIT">Debito</option>
+                                    </select>
+                                </td>
+                                <td *ngIf="columnVisibility['card']">
+                                    <select class="form-select form-select-sm inline-edit-input" [(ngModel)]="editingExpense!.cardId" [disabled]="editingExpense!.paymentMethod !== 'CREDIT_CARD'">
+                                        <option [value]="0">Nenhum</option>
+                                        <option *ngFor="let card of cards" [value]="card.id">{{ card.name }}</option>
+                                    </select>
+                                </td>
+                                <td *ngIf="columnVisibility['installment']">
+                                    <input type="number" class="form-control form-control-sm inline-edit-input" [(ngModel)]="editingExpense!.installment" [disabled]="editingExpense!.paymentMethod !== 'CREDIT_CARD'" min="1" max="48" />
+                                </td>
+                                <td *ngIf="columnVisibility['dueDate']">
+                                    <input type="date" class="form-control form-control-sm inline-edit-input" [(ngModel)]="editingExpense!.dueDate" />
+                                </td>
+                                <td *ngIf="columnVisibility['isToReceive']" class="text-center">
+                                    <input type="checkbox" class="form-check-input" [(ngModel)]="editingExpense!.isToReceive" />
+                                </td>
+                                <td *ngIf="columnVisibility['actions']" class="text-center actions-col">
+                                    <button cButton color="success" size="sm" variant="ghost" (click)="saveRow()" title="Salvar">
+                                        <svg cIcon name="cil-check"></svg>
+                                    </button>
+                                    <button cButton color="secondary" size="sm" variant="ghost" (click)="cancelEdit()" title="Cancelar">
+                                        <svg cIcon name="cil-x"></svg>
+                                    </button>
+                                </td>
+                            </ng-container>
+
+                            <ng-template #viewMode>
+                                <td *ngIf="columnVisibility['date']">{{ expense.date | date:'dd/MM/yyyy' }}</td>
+                                <td *ngIf="columnVisibility['description']">
+                                    <div class="description-cell">
+                                        <span>{{ expense.description }}</span>
+                                        <span *ngIf="expense.isRecurring" class="badge bg-info-subtle text-info-emphasis">Fixo</span>
+                                    </div>
+                                </td>
+                                <td *ngIf="columnVisibility['value']" class="value-cell">{{ expense.value | currency:'BRL':'symbol':'1.2-2' }}</td>
+                                <td *ngIf="columnVisibility['category']">{{ getCategoryName(expense.categoryId) }}</td>
+                                <td *ngIf="columnVisibility['person']">{{ getPersonName(expense.personId) }}</td>
+                                <td *ngIf="columnVisibility['paymentMethod']">
+                                    <span class="payment-badge" [ngClass]="getPaymentMethodClass(expense.paymentMethod)">
+                                        {{ getPaymentMethodName(expense.paymentMethod) }}
+                                    </span>
+                                </td>
+                                <td *ngIf="columnVisibility['card']">{{ getCardName(expense.cardId ?? 0) }}</td>
+                                <td *ngIf="columnVisibility['installment']">
+                                    <span *ngIf="expense.installment && expense.installment > 1">{{ expense.currentInstallment }}/{{ expense.installment }}</span>
+                                    <span *ngIf="!expense.installment || expense.installment <= 1">-</span>
+                                </td>
+                                <td *ngIf="columnVisibility['dueDate']">{{ expense.dueDate | date:'dd/MM/yyyy' }}</td>
+                                <td *ngIf="columnVisibility['isToReceive']" class="text-center">
+                                    <svg *ngIf="expense.isToReceive" cIcon name="cil-hand-point-right" class="text-warning"></svg>
+                                </td>
+                                <td *ngIf="columnVisibility['actions']" class="text-center actions-col">
+                                    <button cButton color="info" size="sm" variant="ghost" (click)="editRow(expense)" title="Editar inline">
+                                        <svg cIcon name="cil-pencil"></svg>
+                                    </button>
+                                    <button cButton color="primary" size="sm" variant="ghost" (click)="openExpenseForm(expense.id)" title="Editar em formulario">
+                                        <svg cIcon name="cil-external-link"></svg>
+                                    </button>
+                                    <button cButton color="danger" size="sm" variant="ghost" (click)="deleteExpense(expense.id)" title="Excluir">
+                                        <svg cIcon name="cil-trash"></svg>
+                                    </button>
+                                </td>
+                            </ng-template>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </c-card-body>
+    </c-card>
 </div>

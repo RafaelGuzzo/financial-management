@@ -1,16 +1,117 @@
-/* src/app/expenses/expenses.component.scss */
-.container {
-    padding: 20px;
+.expenses-page {
+    padding: 0.75rem;
 }
 
-.table-container {
-    overflow-x: auto;
+.expenses-page .card-header {
+    background: #f9fafb;
 }
 
-.full-width {
-    width: 100%;
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-.spacer {
-    flex: 1 1 auto;
+.table-responsive {
+    border-radius: 0.375rem;
+
+    table {
+        font-size: 0.9rem;
+
+        th {
+            font-weight: 600;
+            white-space: nowrap;
+            font-size: 0.77rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: #4b5563;
+        }
+
+        td {
+            vertical-align: middle;
+            font-size: 0.86rem;
+            color: #1f2937;
+        }
+    }
+}
+
+.expenses-table-wrap {
+    border-top: 1px solid #edf0f4;
+}
+
+.inline-edit-input {
+    border-color: #d8dbe1;
+    background: #fcfdff;
+}
+
+.editing-row {
+    background: #f6f9ff !important;
+}
+
+.receivable-row {
+    background: #fffdf4 !important;
+}
+
+.description-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.value-cell {
+    font-weight: 700;
+}
+
+.payment-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.method-cash {
+    background: #edf7ee;
+    color: #2b9f66;
+}
+
+.method-credit {
+    background: #f3efff;
+    color: #6f6df6;
+}
+
+.method-pix {
+    background: #e6f7f9;
+    color: #0096aa;
+}
+
+.method-debit {
+    background: #fff4e8;
+    color: #f28c28;
+}
+
+.method-default {
+    background: #eef1f6;
+    color: #4b5563;
+}
+
+.actions-col {
+    white-space: nowrap;
+}
+
+input.form-control-sm,
+select.form-select-sm {
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .expenses-page {
+        padding: 0.5rem;
+    }
 }

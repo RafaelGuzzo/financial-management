@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ReportResponse } from '../../shared/models/report-response.model';
+import { DashboardReportResponse } from '../../shared/models/dashboard-report-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,5 +15,9 @@ export class ReportService {
 
   getMonthlyReport(year: number, month: number): Observable<ReportResponse> {
     return this.http.get<ReportResponse>(`${this.apiUrl}/monthly?year=${year}&month=${month}`);
+  }
+
+  getDashboardMonthlyReport(year: number, month: number): Observable<DashboardReportResponse> {
+    return this.http.get<DashboardReportResponse>(`${this.apiUrl}/dashboard-monthly?year=${year}&month=${month}`);
   }
 }
