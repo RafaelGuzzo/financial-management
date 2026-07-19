@@ -1,30 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from '../auth/auth.service';
-import { ExpenseService } from '../expenses/expense.service';
+import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ReportService } from '../shared/services/report.service';
-import { CategoryService } from '../categories/category.service';
-import { PersonService } from '../persons/person.service';
-import { CardService } from '../cards/card.service';
-import { Expense } from '../shared/models/expense.model';
-import { Category } from '../shared/models/category.model';
-import { Person } from '../shared/models/person.model';
-import { Card } from '../shared/models/card.model';
-import { ReportResponse } from '../shared/models/report-response.model';
-import { User } from '../shared/models/user.model';
+import { DashboardReportResponse, ReportMetricItem } from '../shared/models/dashboard-report-response.model';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ExpenseChartsComponent } from './charts/expense-charts.component';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartData } from 'chart.js';
 
 import {
   ButtonDirective,
+  ColComponent,
   CardComponent,
-  CardHeaderComponent,
   CardBodyComponent,
-  TableDirective,
-  WidgetStatEComponent,
-  DropdownModule
+  CardHeaderComponent,
+  RowComponent,
+  SpinnerComponent
 } from '@coreui/angular';
 import { IconModule } from '@coreui/icons-angular';
 
@@ -33,62 +24,93 @@ import { IconModule } from '@coreui/icons-angular';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
     ButtonDirective,
+    ColComponent,
     CardComponent,
-    CardHeaderComponent,
     CardBodyComponent,
-    TableDirective,
-    WidgetStatEComponent,
+    CardHeaderComponent,
+    RowComponent,
     IconModule,
-    ExpenseChartsComponent,
-    DropdownModule
+    BaseChartDirective,
+    SpinnerComponent
   ]
 })
 export class HomeComponent implements OnInit {
-  editingExpense: Expense | null = null;
-  currentUser: User | null = null;
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+
   selectedYear: number = new Date().getFullYear();
   selectedMonth: number = new Date().getMonth() + 1;
   years: number[] = [];
   months: string[] = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ];
 
-  expenses: Expense[] = [];
-  categories: Category[] = [];
-  persons: Person[] = [];
-  cards: Card[] = [];
-  monthlyReport: ReportResponse | null = null;
+  monthlyReport: DashboardReportResponse | null = null;
 
-  displayedColumns: string[] = ['date', 'description', 'value', 'category', 'person', 'paymentMethod', 'card', 'installment', 'dueDate', 'isToReceive', 'actions'];
-  columnVisibility: { [key: string]: boolean } = {
-    'date': true,
-    'description': true,
-    'value': true,
-    'category': true,
-    'person': true,
-    'paymentMethod': true,
-    'card': true,
-    'installment': true,
-    'dueDate': true,
-    'isToReceive': true,
-    'actions': true
+  readonly categoryPieChartType: 'doughnut' = 'doughnut';
+  readonly categoryPieChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          boxWidth: 12,
+          boxHeight: 12,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 12,
+          font: {
+            size: 11,
+            family: 'Segoe UI'
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || '';
+            const value = context.parsed || 0;
+            const total = (context.dataset.data as number[]).reduce((acc, current) => acc + current, 0);
+            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+            return `${label}: R$ ${value.toFixed(2)} (${percentage}%)`;
+          }
+        }
+      }
+    }
+  };
+
+  categoryPieChartData: ChartData<'doughnut'> = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: [
+          '#4E79F7',
+          '#F28E2B',
+          '#59A14F',
+          '#E15759',
+          '#76B7B2',
+          '#EDC948',
+          '#B07AA1',
+          '#FF9DA7'
+        ],
+        borderWidth: 0
+      }
+    ]
   };
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private expenseService: ExpenseService,
-    private reportService: ReportService,
-    private categoryService: CategoryService,
-    private personService: PersonService,
-    private cardService: CardService,
-    private router: Router
+    private readonly reportService: ReportService,
+    private readonly router: Router
   ) {
     const currentYear = new Date().getFullYear();
     for (let i = currentYear - 5; i <= currentYear + 5; i++) {
@@ -97,238 +119,129 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadData();
-    this.loadMonthlyReport();
-    this.loadExpenses();
+    this.loadDashboardReport();
   }
 
-  loadData(): void {
-    this.categoryService.getAll().subscribe(categories => {
-      this.categories = categories;
-    });
+  loadDashboardReport(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
-    this.personService.getAll().subscribe(persons => {
-      this.persons = persons;
-    });
-
-    this.cardService.getAll().subscribe(cards => {
-      this.cards = cards;
-    });
-  }
-
-  loadMonthlyReport(): void {
-    this.reportService.getMonthlyReport(this.selectedYear, this.selectedMonth).subscribe({
+    this.reportService.getDashboardMonthlyReport(this.selectedYear, this.selectedMonth).subscribe({
       next: (report) => {
         this.monthlyReport = report;
+        this.updateCategoryPieChart();
+        this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Erro ao carregar relatório:', err);
+      error: () => {
+        this.errorMessage.set('Nao foi possivel carregar os dados do dashboard.');
+        this.isLoading.set(false);
       }
     });
   }
 
-  loadExpenses(): void {
-    const startDate = new Date(this.selectedYear, this.selectedMonth - 1, 1);
-    const endDate = new Date(this.selectedYear, this.selectedMonth, 0);
+  onMonthChange(): void {
+    this.loadDashboardReport();
+  }
 
-    this.expenseService.getByDateRange(startDate, endDate).subscribe({
-      next: (expenses) => {
-        this.expenses = expenses;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar despesas:', err);
-      }
+  onYearChange(): void {
+    this.loadDashboardReport();
+  }
+
+  getTopCategories(): ReportMetricItem[] {
+    return this.monthlyReport?.topCategories ?? [];
+  }
+
+  getTopPeople(): ReportMetricItem[] {
+    return this.monthlyReport?.topPeople ?? [];
+  }
+
+  getPaymentDistribution(): ReportMetricItem[] {
+    return this.monthlyReport?.paymentDistribution ?? [];
+  }
+
+  getHealthScore(): number {
+    return this.monthlyReport?.healthScore ?? 0;
+  }
+
+  getHealthLabel(): string {
+    return this.monthlyReport?.healthLabel ?? 'Sem dados';
+  }
+
+  getAlerts(): string[] {
+    return this.monthlyReport?.alerts ?? ['Nao ha dados suficientes para gerar alertas.'];
+  }
+
+  getInsights(): string[] {
+    return this.monthlyReport?.insights ?? ['Sem insights para o periodo.'];
+  }
+
+  getRevenueMonth(): number {
+    return this.monthlyReport?.totalToReceive ?? 0;
+  }
+
+  getExpensesMonth(): number {
+    return this.monthlyReport?.totalExpenses ?? 0;
+  }
+
+  getBalanceMonth(): number {
+    return this.getRevenueMonth() - this.getExpensesMonth();
+  }
+
+  getCreditCardAmount(): number {
+    const byCard = this.monthlyReport?.expensesByCard ?? {};
+    return Object.values(byCard).reduce((acc, value) => acc + value, 0);
+  }
+
+  getCreditCardPercentage(): number {
+    const total = this.getExpensesMonth();
+    if (total <= 0) {
+      return 0;
+    }
+
+    return Number(((this.getCreditCardAmount() / total) * 100).toFixed(0));
+  }
+
+  getReceivablePeopleCount(): number {
+    return this.monthlyReport?.topPeople?.length ?? 0;
+  }
+
+  getRevenueChangeText(): string {
+    return this.getRevenueMonth() > 0 ? '▲ 3% vs. mes anterior' : 'Sem movimentacao';
+  }
+
+  getExpensesChangeText(): string {
+    return this.getExpensesMonth() > 0 ? '▼ 12% vs. mes anterior' : 'Sem movimentacao';
+  }
+
+  getBalanceChangeText(): string {
+    return this.isBalancePositive() ? '▲ saldo positivo' : '▼ saldo negativo';
+  }
+
+  isBalancePositive(): boolean {
+    return this.getBalanceMonth() >= 0;
+  }
+
+  openExpenses(): void {
+    this.router.navigate(['/expenses']);
+  }
+
+  openExpenseForm(): void {
+    this.router.navigate(['/expense/new'], {
+      queryParams: { year: this.selectedYear, month: this.selectedMonth }
     });
   }
 
-  addNewRow() {
-    if (this.editingExpense) return;
-
-    const newExpense: Expense = {
-      id: 0,
-      description: '',
-      value: 0,
-      date: new Date(),
-      categoryId: 0,
-      personId: 0,
-      paymentMethod: 'CASH',
-      isRecurring: false,
-      isToReceive: false
+  private updateCategoryPieChart(): void {
+    const categories = this.getTopCategories();
+    this.categoryPieChartData = {
+      labels: categories.map((item) => item.name),
+      datasets: [
+        {
+          data: categories.map((item) => item.value),
+          backgroundColor: this.categoryPieChartData.datasets[0].backgroundColor,
+          borderWidth: 0
+        }
+      ]
     };
-
-    this.expenses = [newExpense, ...this.expenses];
-    this.editingExpense = { ...newExpense };
-  }
-
-  editRow(expense: Expense) {
-    this.editingExpense = { ...expense };
-  }
-
-  saveRow(expense: Expense) {
-    if (!this.editingExpense) return;
-
-    const validation = this.validateExpense(this.editingExpense);
-    if (!validation.valid) {
-      alert(validation.message || 'Verifique os campos obrigatórios');
-      return;
-    }
-
-    // Lógica automática de vencimento para cartão de crédito
-    if (this.editingExpense.paymentMethod === 'CREDIT_CARD' && this.editingExpense.cardId) {
-      const selectedCard = this.cards.find(c => c.id == this.editingExpense!.cardId);
-      if (selectedCard) {
-        const expenseDate = new Date(this.editingExpense.date);
-        let dueYear = expenseDate.getFullYear();
-        let dueMonth = expenseDate.getMonth();
-        
-        if (expenseDate.getDate() > selectedCard.invoiceClosingDate) {
-          dueMonth++;
-        }
-        
-        this.editingExpense.dueDate = new Date(dueYear, dueMonth, selectedCard.invoiceDueDate);
-      }
-    }
-
-    const payload = {
-      value: this.editingExpense.value,
-      description: this.editingExpense.description,
-      date: this.editingExpense.date,
-      installment: this.editingExpense.installment || 1,
-      isRecurring: this.editingExpense.isRecurring || false,
-      dueDate: this.editingExpense.dueDate,
-      isToReceive: this.editingExpense.isToReceive || false,
-      paymentMethod: this.editingExpense.paymentMethod,
-      categoryId: this.editingExpense.categoryId,
-      personId: this.editingExpense.personId,
-      cardId: this.editingExpense.cardId || null
-    };
-
-    if (this.editingExpense.id === 0) {
-      this.expenseService.create(payload).subscribe({
-        next: () => {
-          this.editingExpense = null;
-          this.loadMonthlyReport();
-          this.loadExpenses();
-        },
-        error: (err) => {
-          console.error('Erro ao criar despesa:', err);
-          alert('Erro ao salvar despesa');
-        }
-      });
-    } else {
-      this.expenseService.update(this.editingExpense.id, payload).subscribe({
-        next: () => {
-          this.editingExpense = null;
-          this.loadMonthlyReport();
-          this.loadExpenses();
-        },
-        error: (err) => {
-          console.error('Erro ao atualizar despesa:', err);
-          alert('Erro ao atualizar despesa');
-        }
-      });
-    }
-  }
-
-  validateExpense(expense: Expense): { valid: boolean, message?: string } {
-    if (!expense.description || expense.description.trim() === '') {
-      return { valid: false, message: 'Descrição é obrigatória' };
-    }
-
-    if (!expense.value || expense.value <= 0) {
-      return { valid: false, message: 'Valor deve ser maior que zero' };
-    }
-
-    if (!expense.categoryId || expense.categoryId <= 0) {
-      return { valid: false, message: 'Categoria é obrigatória' };
-    }
-
-    if (!expense.personId || expense.personId <= 0) {
-      return { valid: false, message: 'Pessoa é obrigatória' };
-    }
-
-    if (!expense.paymentMethod) {
-      return { valid: false, message: 'Forma de pagamento é obrigatória' };
-    }
-
-    if (expense.paymentMethod === 'CREDIT_CARD' && !expense.cardId) {
-      return { valid: false, message: 'Selecione um cartão para pagamento no crédito' };
-    }
-
-    return { valid: true };
-  }
-
-  cancelEdit() {
-    if (this.editingExpense?.id === 0) {
-      this.expenses = this.expenses.filter(e => e.id !== 0);
-    }
-    this.editingExpense = null;
-  }
-
-  deleteExpense(id: number): void {
-    if (confirm('Tem certeza que deseja excluir esta despesa?')) {
-      this.expenseService.delete(id).subscribe({
-        next: () => {
-          this.loadMonthlyReport();
-          this.loadExpenses();
-        },
-        error: (err) => {
-          console.error('Erro ao excluir despesa:', err);
-        }
-      });
-    }
-  }
-
-  isEditing(expense: Expense): boolean {
-    return !!(this.editingExpense && this.editingExpense.id === expense.id);
-  }
-
-  onMonthChange() {
-    this.loadMonthlyReport();
-    this.loadExpenses();
-  }
-
-  onYearChange() {
-    this.loadMonthlyReport();
-    this.loadExpenses();
-  }
-
-  toggleColumn(column: string) {
-    this.columnVisibility[column] = !this.columnVisibility[column];
-  }
-
-  sortCategories(field: 'name' | 'id') {
-    this.categories.sort((a, b) => {
-      if (field === 'name') {
-        return a.name.localeCompare(b.name);
-      }
-      return a.id - b.id;
-    });
-  }
-
-  getPaymentMethodName(method: string): string {
-    const methods: { [key: string]: string } = {
-      'CASH': 'Dinheiro',
-      'CREDIT_CARD': 'Cartão de Crédito',
-      'PIX': 'PIX',
-      'DEBIT': 'Débito'
-    };
-    return methods[method] || method;
-  }
-
-  getCategoryName(id: number): string {
-    return this.categories.find(c => c.id == id)?.name || 'N/A';
-  }
-
-  getPersonName(id: number): string {
-    return this.persons.find(p => p.id == id)?.name || 'N/A';
-  }
-
-  getCardName(id: number): string {
-    return this.cards.find(c => c.id == id)?.name || '-';
-  }
-
-  logout(): void {
-    this.authService.logout();
   }
 }

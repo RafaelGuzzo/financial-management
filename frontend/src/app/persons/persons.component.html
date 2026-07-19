@@ -1,26 +1,24 @@
-<div class="container-fluid">
+<div class="container-fluid entity-page">
   <c-row>
     <c-col xs="12">
-      <c-card class="mb-4">
-        <c-card-header class="d-flex justify-content-between align-items-center">
-          <strong>Pessoas</strong>
-          <button cButton color="primary" (click)="toggleForm()">
+      <c-card class="mb-4 shadow-sm">
+        <c-card-header class="d-flex justify-content-between align-items-center bg-light">
+          <h5 class="mb-0 fw-semibold">Gerenciar Pessoas</h5>
+          <button cButton color="primary" size="sm" (click)="toggleForm()">
             <svg cIcon name="cil-plus" class="me-1"></svg>
             {{ showForm ? 'Cancelar' : 'Adicionar Pessoa' }}
           </button>
         </c-card-header>
         <c-card-body>
           <!-- Formulário -->
-          <div *ngIf="showForm" class="mb-4">
+          <div *ngIf="showForm" class="mb-4 p-3 border rounded bg-light">
             <form cForm [formGroup]="form" (ngSubmit)="onSave()">
-              <c-row class="mb-3">
+              <c-row class="g-3">
                 <c-col md="6">
-                  <label cLabel for="name">Nome *</label>
-                  <input cFormControl id="name" type="text" formControlName="name" placeholder="Digite o nome" />
+                  <label cLabel for="name" class="small fw-bold">Nome *</label>
+                  <input cFormControl id="name" type="text" formControlName="name" placeholder="Digite o nome da pessoa" />
                 </c-col>
-              </c-row>
-              <c-row>
-                <c-col>
+                <c-col xs="12" class="mt-4">
                   <button cButton color="success" type="submit" [disabled]="form.invalid" class="me-2">
                     <svg cIcon name="cil-check" class="me-1"></svg>
                     Salvar
@@ -35,30 +33,32 @@
           </div>
 
           <!-- Tabela -->
-          <table cTable striped hover>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th class="text-center" style="width: 150px;">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let person of persons">
-                <td>{{ person.name }}</td>
-                <td class="text-center">
-                  <button cButton color="info" size="sm" variant="ghost" (click)="editPerson(person)" class="me-1">
-                    <svg cIcon name="cil-pencil"></svg>
-                  </button>
-                  <button cButton color="danger" size="sm" variant="ghost" (click)="deletePerson(person.id)">
-                    <svg cIcon name="cil-trash"></svg>
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="persons.length === 0">
-                <td colspan="2" class="text-center text-muted">Nenhuma pessoa cadastrada</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive entity-table-wrap">
+            <table cTable striped hover class="mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Nome</th>
+                  <th class="text-center" style="width: 120px;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let person of persons">
+                  <td class="align-middle">{{ person.name }}</td>
+                  <td class="text-center align-middle">
+                    <button cButton color="info" size="sm" variant="ghost" (click)="editPerson(person)" class="me-1" title="Editar">
+                      <svg cIcon name="cil-pencil"></svg>
+                    </button>
+                    <button cButton color="danger" size="sm" variant="ghost" (click)="deletePerson(person.id)" title="Excluir">
+                      <svg cIcon name="cil-trash"></svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="persons.length === 0">
+                  <td colspan="2" class="text-center py-4 text-muted">Nenhuma pessoa cadastrada</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </c-card-body>
       </c-card>
     </c-col>

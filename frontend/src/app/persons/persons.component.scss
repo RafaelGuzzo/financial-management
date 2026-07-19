@@ -1,72 +1,32 @@
-.container {
-  padding: 1rem;
+.entity-page {
+  padding: 0.75rem;
 }
 
-.spacer {
-  flex: 1 1 auto;
+.entity-page .card-header {
+  border-bottom: 1px solid #e6e9ee;
 }
 
-.form-card {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.form-content {
-  padding: 1rem;
-  /* padding interno no form */
-}
-
-.form-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.horizontal-fields {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.half-width {
-  flex: 1;
-}
-
-.button-group {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.card-table {
-  margin-top: 1rem;
-
-  .mat-card-content {
-    display: flex;
-    flex-direction: column;
-  }
+.entity-table-wrap {
+  border-top: 1px solid #edf0f4;
 
   table {
-    width: 100%;
-    margin-bottom: 0.5rem; // adiciona esse espaçamento
-  }
+    th {
+      font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #4b5563;
+      font-weight: 700;
+    }
 
-  th {
-    font-weight: 600;
-    text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.7);
+    td {
+      font-size: 0.87rem;
+      color: #1f2937;
+    }
   }
+}
 
-  td {
-    padding: 0.6rem 0.5rem;
-  }
-
-  .mat-icon-button {
-    margin: 0 4px;
+@media (max-width: 768px) {
+  .entity-page {
+    padding: 0.5rem;
   }
 }
